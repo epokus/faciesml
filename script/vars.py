@@ -16,17 +16,19 @@ color_list = ['#011627', '#2EC4B6', '#E71D36', '#FF9F1C',
               '#F20095', '#4F0A48', '#FFB400', '#FFFE01']
 
 from bokeh.models.mappers import LinearColorMapper
-facies_pallete = LinearColorMapper(palette = [color_pallete['black'][1],
-                                              color_pallete['red'][1],
-                                                color_pallete['orange'][3],
-                                                 color_pallete['br-green'][4] ,
-                                                color_pallete['br-green'][1],
 
-                                                color_pallete['orange'][2],
-                                                color_pallete['black'][3],
-                                                color_pallete['blue'][2],
-                                                ],
-                                                low=0, high=8, nan_color = (255, 255, 255, 0))
+def facies_pallete():
+    palete = LinearColorMapper(palette = [color_pallete['black'][1],
+                                                  color_pallete['red'][1],
+                                                  color_pallete['orange'][3],
+                                                  color_pallete['br-green'][4] ,
+                                                  color_pallete['br-green'][1],
+                                                  color_pallete['orange'][2],
+                                                    color_pallete['black'][3],
+                                                    color_pallete['blue'][2],
+                                                    ],
+                                                    low=0, high=8, nan_color = (255, 255, 255, 0))
+    return palete
 facies_mapper = {0:'Coal',
                  1:'Upper Delta Front/ Mouthbar',
                  2:'Lower Delta Front/ Mouthbar',

@@ -12,12 +12,12 @@ from xgboost import XGBClassifier
 
 import pandas as pd
 import numpy as np
+import timeit
 
 import las
 
 from script.log_maker import triple_maker, nd_plot_maker
 from script.vars import facies_mapper, facies_pallete, tc_img
-
 
 # df = pd.DataFrame(las.LASReader('data\SEM0400.las').data).replace(-999.25, np.nan)
 # df = pd.DataFrame(las.LASReader("data/Keller 'B' No_ 1.LAS").data).replace(-999.25, np.nan)
@@ -42,6 +42,9 @@ default_data = fac.data['image'][-1::-1]
 a = min(df['DEPT'])
 b = max(df['DEPT'])
 c = b - a
+facies_pallete01 = facies_pallete()
+facies_pallete02 = facies_pallete()
+
 
 # Facies Log buttons creation
 log_fac_input = figure(**tc_img, title = "Input Facies")
@@ -51,7 +54,7 @@ log_fac_input.image(image='image',
          y = b,
          dw = 1,
          dh = c,
-         color_mapper=facies_pallete)
+         color_mapper=facies_pallete01)
 
 log_fac_pred = figure(**tc_img, title = "Predicted Facies")
 log_fac_pred.image(image='image',
@@ -60,7 +63,7 @@ log_fac_pred.image(image='image',
          y = b,
          dw = 1,
          dh = c,
-         color_mapper=facies_pallete)
+         color_mapper=facies_pallete02)
 
 # Triple Combo  creation
 logs = triple_maker(cds=cds, plot_data = [['GR'],['NPHI', 'RHOB'], ['RT']])
@@ -172,16 +175,29 @@ def train_cb():
     print('training starting')
     print('algorithm used:')
     print(clf)
+    tic = timeit.default_timer()
     clf.fit(X_train, y_train.flatten())
-    print('training finished')
+    toc1 = np.round((timeit.default_timer() - tic), 4)
+
+    print(f'training finished')
+    print(f'time for training: {toc1} sec')
     print(f'train score: {clf.score(X_train, y_train)}')
     print(f'test score: {clf.score(X_test, y_test)}')
     print('=============================================')
 
-    debug_div.text = f"""<p>======================= <br /><strong>algorithm used: <br />{clf}<br />training starting ...</strong><br /><strong>training finished ... :]</strong><br />train score: {round(clf.score(X_train, y_train),3)}<br />test score: {round(clf.score(X_test, y_test),3)}<br />=======================</p>"""
 
+    tic = timeit.default_timer()
     pred = clf.predict(X).reshape(-1 ,1)
+    toc2 =  np.round((timeit.default_timer() - tic), 4)
+    print(f'time for prediction: {toc2} sec')
     pred_name = [facies_mapper[val[0]] for val in pred]
+
+    debug_div.text = f"""<p>======================= <br /><strong>algorithm used: <br />{clf}</strong></p>
+                        <p><strong><br />training starting ...</strong><br /><strong>training finished ... :))</strong></p>
+                        <p>time for training: {toc1} sec</p>
+                        <p>time for prediction: {toc2} sec</p>
+                        <p><br />train score: {round(clf.score(X_train, y_train),3)}<br />test score: {round(clf.score(X_test, y_test),3)}<br />=======================</p>"""
+
 
     fac_pred.data['image'] = [pred[-1::-1]]
     fac_pred.data['FACIES_NAME'] = [pred_name[-1::-1]]
