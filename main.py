@@ -42,9 +42,6 @@ default_data = fac.data['image'][-1::-1]
 a = min(df['DEPT'])
 b = max(df['DEPT'])
 c = b - a
-facies_pallete01 = facies_pallete()
-facies_pallete02 = facies_pallete()
-
 
 # Facies Log buttons creation
 log_fac_input = figure(**tc_img, title = "Input Facies")
@@ -54,7 +51,7 @@ log_fac_input.image(image='image',
          y = b,
          dw = 1,
          dh = c,
-         color_mapper=facies_pallete01)
+         color_mapper=facies_pallete())
 
 log_fac_pred = figure(**tc_img, title = "Predicted Facies")
 log_fac_pred.image(image='image',
@@ -63,7 +60,7 @@ log_fac_pred.image(image='image',
          y = b,
          dw = 1,
          dh = c,
-         color_mapper=facies_pallete02)
+         color_mapper=facies_pallete())
 
 # Triple Combo  creation
 logs = triple_maker(cds=cds, plot_data = [['GR'],['NPHI', 'RHOB'], ['RT']])
