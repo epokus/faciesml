@@ -2,7 +2,7 @@ from bokeh.plotting import figure, curdoc
 from bokeh.layouts import row, column
 from bokeh.models import ColumnDataSource,Toolbar, ToolbarBox
 from bokeh.models.tools import WheelZoomTool, PanTool, HoverTool, BoxSelectTool
-from bokeh.models.widgets import Button, RadioButtonGroup, CheckboxButtonGroup, MultiSelect
+from bokeh.models.widgets import Button, RadioButtonGroup, MultiSelect, Div
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import AdaBoostClassifier, RandomForestClassifier
@@ -15,31 +15,18 @@ import numpy as np
 
 import las
 
-from script.log_maker import log_maker
-from script.vars import tc_200, facies_mapper, facies_pallete
+from script.log_maker import triple_maker, nd_plot_maker
+from script.vars import facies_mapper, facies_pallete, tc_img
 
 
-df = pd.DataFrame(las.LASReader('data\SEM0400.las').data).replace(-999.25, np.nan)
+# df = pd.DataFrame(las.LASReader('data\SEM0400.las').data).replace(-999.25, np.nan)
 # df = pd.DataFrame(las.LASReader("data/Keller 'B' No_ 1.LAS").data).replace(-999.25, np.nan)
+df = pd.DataFrame(las.LASReader("data/NELSON #9-16.LAS").data).replace(-999.25, np.nan)
+
 df = df.dropna(subset=df.columns[:-1])
 
 
 df['FACIES_NAME'] = [np.nan if np.isnan(val)  else facies_mapper[val]  for val in df['FACIES']]
-
-# defining feed data for bokeh plot in CDS format
-
-# facies_mapper = {1:'Upper Delta Front Mouthbar',
-#                 2:'Lower Delta Front Mouthbar',
-#                 3:'Prodelta sand',
-#                 4:'Prodelta shale',
-#                 5:'Channel',
-#                 6:'Channel overbank',
-#                 7:'Carbonate',
-#                 np.nan:'Coal',}
-#
-#
-#
-# [facies_mapper[val] for val in df['FACIES']]
 
 
 cds = ColumnDataSource(df)
@@ -57,7 +44,7 @@ b = max(df['DEPT'])
 c = b - a
 
 # Facies Log buttons creation
-log_fac_input = figure(**tc_200, title = "Input Facies")
+log_fac_input = figure(**tc_img, title = "Input Facies")
 log_fac_input.image(image='image',
          source=fac,
          x = 0,
@@ -66,7 +53,7 @@ log_fac_input.image(image='image',
          dh = c,
          color_mapper=facies_pallete)
 
-log_fac_pred = figure(**tc_200, title = "Predicted Facies")
+log_fac_pred = figure(**tc_img, title = "Predicted Facies")
 log_fac_pred.image(image='image',
          source=fac_pred,
          x = 0,
@@ -76,7 +63,10 @@ log_fac_pred.image(image='image',
          color_mapper=facies_pallete)
 
 # Triple Combo  creation
-logs = log_maker(cds=cds, plot_data = [['GR'],['NPHI', 'RHOB'], ['RT']])
+logs = triple_maker(cds=cds, plot_data = [['GR'],['NPHI', 'RHOB'], ['RT']])
+
+# ND Plot
+nd_plot = nd_plot_maker(cds, 'GR')
 
 # Toolbox Creation
 wheel_zoom = WheelZoomTool(dimensions='height')
@@ -93,10 +83,10 @@ tooltips_log = [("DEPTH", "@DEPT"),
 
 
 HoverTool_fac = HoverTool(tooltips=tooltips_fac)
-HoverTool_log = HoverTool(tooltips=tooltips_log, point_policy = "snap_to_data")
+HoverTool_log = HoverTool(tooltips=tooltips_log, point_policy = "snap_to_data", names=['line_plot0','nd_plot'], mode='hline')
 
 tools1 = (wheel_zoom, pan_tool, HoverTool_fac)
-tools2 = (wheel_zoom, pan_tool, box_tool)
+tools2 = (wheel_zoom, pan_tool, box_tool, HoverTool_log)
 
 toolbar = Toolbar(tools=[wheel_zoom, pan_tool, box_tool, HoverTool_log ])
 toolbar_box = ToolbarBox(toolbar=toolbar, toolbar_location='left')
@@ -114,7 +104,6 @@ for i in range(len(logs)):
 
 
 # defining buttons
-# fac_assign  = CheckboxButtonGroup(active=[], labels=['coal', 'udf', 'ldf', 'pd shale', 'pd sand', 'ch', 'ob', 'calc'])
 fac_assign  = MultiSelect(value=[], options=[('0', 'Coal'),
                                              ('1', 'Upper Delta Plain'),
                                              ('2', 'Lowe Delta Plain'),
@@ -125,14 +114,29 @@ fac_assign  = MultiSelect(value=[], options=[('0', 'Coal'),
                                              ('7', 'Carbonate')],
                           size=8)
 
-algo_select  = RadioButtonGroup(active=0, labels=['LogReg', 'RandFor', 'AdaBo', 'XGB'])
-clear_button = Button(label = 'clear data')
-load_default = Button(label = 'load default data')
-train_button = Button(label = 'train!')
-button_group = column([fac_assign, algo_select, clear_button,load_default,train_button])
+algo_select  = RadioButtonGroup(active=0, labels=['LogReg', 'RandFor', 'AdaBo', 'XGB'],width=350)
+clear_button = Button(label = 'clear data',
+                      button_type="default", width=120, height=30)
+load_default = Button(label = 'load default data',
+                      button_type="default", width=120, height=30)
+train_button = Button(label = 'train!!',
+                      button_type="warning", width=100, height=30)
 
 
-stack = row([log_fac_input, log_fac_pred, *logs ,toolbar_box,button_group])
+header_div = Div(width = 600,text = """<h1>Facies Machine Learning Dashboard</h1>
+                        <p>This website meant to demonstrate the use of machine learning for supervised facies classification using several general algorithm. This web is developed by Epo P Kusumah - Dept of Geology, Universitas Pertamina (<a href="https://gl.universitaspertamina.ac.id/?page_id=8573" target="_blank" rel="noopener">link</a>). Sedstrat.com (<a href="https://www.sedstrat.com/" target="_blank" rel="noopener">link</a>).</p>
+                        """)
+debug_div = Div(width = 300, text = 'Test and Training Score Goes here:')
+footer_div = Div(width = 1000, text = """<p>The data being used in this Web provided by Kansas Geological Survey, well id: <a href="https://chasm.kgs.ku.edu/ords/qualified.well_page.DisplayWell?f_kid=1044241592">NELSON #9-16</a></p>
+""")
+facies_assign_div = Div(text = "<p><strong>Facies Assignment</strong></p>")
+button_group_div = Div(text = "<p><strong>Algorithm Selection and Training Button</strong></p>")
+
+button_group = column([facies_assign_div, fac_assign, button_group_div,algo_select, row([clear_button,load_default,train_button])])
+
+
+stack = column([header_div,row([log_fac_input, log_fac_pred, *logs ,toolbar_box,
+                column([row([button_group, debug_div]), nd_plot,])]),footer_div])
 
 # button callbacks
 selection = [1]
@@ -147,13 +151,6 @@ def facies_select_cb(attr, old, new):
         print(int(fac_assign.value[0]))
         temp[selection] = int(fac_assign.value[0])
         cds.data['FACIES'] = temp
-
-        # temp = cds.data['FACIES_NAME']
-        # print(new)
-        # print(facies_mapper[new])
-        # print(temp)
-        # temp[selection] = facies_mapper[new]
-        # cds.data['FACIES_NAME'] = temp
 
         temp = temp.reshape(-1 ,1)
         fac.data['image'] = [temp[-1::-1]]
@@ -171,7 +168,6 @@ def train_cb():
 
     global clf
 
-    # clf.fit(X[slicer], y[slicer])
     print('=============================================')
     print('training starting')
     print('algorithm used:')
@@ -181,6 +177,8 @@ def train_cb():
     print(f'train score: {clf.score(X_train, y_train)}')
     print(f'test score: {clf.score(X_test, y_test)}')
     print('=============================================')
+
+    debug_div.text = f"""<p>======================= <br /><strong>algorithm used: <br />{clf}<br />training starting ...</strong><br /><strong>training finished ... :]</strong><br />train score: {round(clf.score(X_train, y_train),3)}<br />test score: {round(clf.score(X_test, y_test),3)}<br />=======================</p>"""
 
     pred = clf.predict(X).reshape(-1 ,1)
     pred_name = [facies_mapper[val[0]] for val in pred]
