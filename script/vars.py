@@ -41,7 +41,7 @@ facies_mapper = {0:'Coal',
 screen_multiplier = 1.3
 
 
-tc_200 = {'plot_width': 150,
+tc_200 = {'plot_width': 200,
             'plot_height': 600,
             'toolbar_location': None,
             'x_axis_location': None}

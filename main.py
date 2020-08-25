@@ -231,3 +231,4 @@ load_default.on_click(load_default_cb)
 algo_select.on_change('active', algo_sel_cb)
 
 curdoc().add_root(stack)
+curdoc().title = 'Simple Facies Prediction with ML'

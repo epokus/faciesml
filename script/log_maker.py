@@ -14,7 +14,6 @@ def triple_maker(cds, plot_data = [['GR'],['NPHI', 'RHOB'], ['RT','RM']]):
         p.y_range.flipped = True
         p.extra_x_ranges[''] = Range1d(start=0, end=1)
 
-
         p.add_layout(LinearAxis(x_range_name='', axis_label='',
                                 axis_line_color=None,
                                 major_tick_line_color=None,
@@ -53,8 +52,6 @@ def triple_maker(cds, plot_data = [['GR'],['NPHI', 'RHOB'], ['RT','RM']]):
                       line_color = None ,
                       x_range_name = val,
                       selection_color = 'green')
-
-
 
         p_container.append(p)
     return p_container
