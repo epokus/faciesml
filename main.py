@@ -19,9 +19,9 @@ import las
 from script.log_maker import triple_maker, nd_plot_maker
 from script.vars import facies_mapper, facies_pallete, tc_img
 
-df = pd.DataFrame(las.LASReader('data\SEM0400.las').data).replace(-999.25, np.nan)
+# df = pd.DataFrame(las.LASReader('data\SEM0400.las').data).replace(-999.25, np.nan)
 # df = pd.DataFrame(las.LASReader("data/Keller 'B' No_ 1.LAS").data).replace(-999.25, np.nan)
-# df = pd.DataFrame(las.LASReader("data/NELSON #9-16.LAS").data).replace(-999.25, np.nan)
+df = pd.DataFrame(las.LASReader("data/NELSON #9-16.LAS").data).replace(-999.25, np.nan)
 
 df = df.dropna(subset=df.columns[:-1])
 
