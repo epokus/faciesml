@@ -23,7 +23,9 @@ from script.vars import facies_mapper, facies_pallete, tc_img
 # df = pd.DataFrame(las.LASReader("data/Keller 'B' No_ 1.LAS").data).replace(-999.25, np.nan)
 df = pd.DataFrame(las.LASReader("data/NELSON #9-16.LAS").data).replace(-999.25, np.nan)
 
-df = df.dropna(subset=df.columns[:-1])
+
+
+df = df.dropna(subset=['GR', 'NPHI', 'RHOB', 'RT'])
 
 
 df['FACIES_NAME'] = [np.nan if np.isnan(val)  else facies_mapper[val]  for val in df['FACIES']]
