@@ -15,7 +15,6 @@ PyYAML
 scikit-learn
 scipy
 six
-threadpoolctl
 tornado
 typing-extensions
 wincertstore
